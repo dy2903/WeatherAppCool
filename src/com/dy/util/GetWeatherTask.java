@@ -10,7 +10,11 @@ import com.dy.activity.MainActivity;
 import com.dy.app.Application;
 import com.dy.bean.City;
 import com.dy.bean.WeatherInfo;
-
+/**
+ * 后台运行,开启线程
+ * 首先在Cache中读取,如果有信息,使用Xml进行解析
+ * 如果没有,再执行网络请求,同时设置预警标志
+ */
 public class GetWeatherTask extends AsyncTask<Void, Void, Integer> {
 	
 	private static final String BASE_URL = "http://sixweather.3gpk.net/SixWeather.aspx?city=%s";
@@ -27,31 +31,31 @@ public class GetWeatherTask extends AsyncTask<Void, Void, Integer> {
 		mApplication = Application.getInstance();
 	};
 
+	/**
+	 * 先读取缓存中的天气信息
+	 * 如果没有再联网:XmlPullParseUtil.parseWeatherInfo(fileResult)
+	 * 读出的天气信息,设置到Application中
+	 */
 	@Override
 	protected Integer doInBackground(Void... params) {
 		try {			
 //			替换掉网络URL里面的参数值
 			String url = String.format(BASE_URL,
 					URLEncoder.encode(mCity.getName(), "utf-8"));
-			// 为了避免频繁刷新浪费流量，所以先读取内存中的信息
-//			if (mApplication.getAllWeather() != null
-//					&& mApplication.getAllWeather().getCity()
-//							.equals(mCity.getName())) {
-//				L.i("lwp", "get the weather info from memory");
-//				return SCUESS;// 直接返回，不继续执行
-//			}
-			// 再读取文件中的缓存信息
-			String fileResult = ConfigCache.getUrlCache(mCity.getPinyin());// 读取文件中的缓存
+//			读出来的是一段XML
+			String fileResult = ConfigCache.getUrlCache(mCity.getPinyin());// 读取文件中的缓存			
 			if (!TextUtils.isEmpty(fileResult)) {
 //				XML解析
 				WeatherInfo allWeather = XmlPullParseUtil
 						.parseWeatherInfo(fileResult);
 				if (allWeather != null) {
+//					读出的天气信息,设置到Application中
 					mApplication.SetAllWeather(allWeather);
 					LogUtil.i("lwp", "get the weather info from file");
 					return SCUESS;
 				}
 			}
+			
 			// 最后才执行网络请求
 			String netResult = HttpUtil.connServerForResult(url);
 			

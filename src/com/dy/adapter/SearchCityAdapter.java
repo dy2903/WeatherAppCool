@@ -70,34 +70,31 @@ public class SearchCityAdapter extends BaseAdapter implements Filterable {
 	}
 
 	
+	/*
+	 * 获得滤除规则(non-Javadoc)
+	 * @see android.widget.Filterable#getFilter()
+	 */
 	@Override
 	public Filter getFilter() {
+		
 		Filter filter = new Filter() {
 			
 			@SuppressWarnings("unchecked")
-//			保存结果,通知UI进行显示
-			protected void publishResults(CharSequence constraint,
-					FilterResults results) {
-				mResultCities = (ArrayList<City>) results.values;
-				if (results.count > 0) {
-					SearchCityAdapter.this.notifyDataSetChanged();
-				} else {
-					SearchCityAdapter.this.notifyDataSetInvalidated();
-				}
-			};
 //			过滤的规则
 			protected FilterResults performFiltering(CharSequence s) {
+				
 				String str = s.toString().toLowerCase();
 //				遍历所有的City信息,如果有匹配的,保存到List里面,然后设置到FilterResults中中去
-				// mFilterStr = str;
 				FilterResults results = new FilterResults();
 				ArrayList<City> cityList = new ArrayList<City>();
+				
 				if (mAllCities != null && mAllCities.size() != 0) {
 					for (City cb : mAllCities) {
 						// 匹配全拼、首字母、和城市名中文
 						if (cb.getPy().indexOf(str) > -1
 								|| cb.getPinyin().indexOf(str) > -1
 								|| cb.getName().indexOf(str) > -1) {
+//							将符合要求的city保存到List中
 							cityList.add(cb);
 						}
 					}
@@ -106,7 +103,26 @@ public class SearchCityAdapter extends BaseAdapter implements Filterable {
 				results.count = cityList.size();
 				return results;
 			};
+			
+			/*
+			 	保存结果,通知UI进行显示
+				把performFiltering中的results传递进来
+			 * @see android.widget.Filter#publishResults(java.lang.CharSequence, android.widget.Filter.FilterResults)
+			 */
+			protected void publishResults(CharSequence constraint,
+					FilterResults results) {
+//				设置到成员变量中
+				mResultCities = (ArrayList<City>) results.values;
+				if (results.count > 0) {
+					SearchCityAdapter.this.notifyDataSetChanged();
+				} else {
+					SearchCityAdapter.this.notifyDataSetInvalidated();
+				}
+			};
+			
 		};
+		
+		
 		return filter;
 	};
 

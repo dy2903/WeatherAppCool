@@ -69,7 +69,9 @@ public class PinnedHeaderListView extends ListView {
 			mHeaderViewHeight = mHeaderView.getMeasuredHeight();
 		}
 	}
-
+	/*
+	 * 设置的是HeaderView
+	 */
 	public void setPinnedHeaderView(View view) {
 		mHeaderView = view;
 		if (mHeaderView != null) {

@@ -234,6 +234,7 @@ public class Application extends android.app.Application {
 
 	/**
 	 * 获得天气图片
+	 * 晴转多云
 	 * @param climate
 	 * @return int
 	 */

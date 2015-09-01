@@ -12,7 +12,11 @@ import com.dy.app.Application;
 import com.dy.bean.WeatherInfo;
 import com.dy.util.TimeUtil;
 import com.way.weather.R;
-
+/**
+ * ViewPager上的视图
+ * @author DX2903
+ *
+ */
 public class FirstWeatherFragment extends Fragment {
 	private TextView weekTv1, weekTv2, weekTv3;
 	private ImageView weather_imgIv1, weather_imgIv2, weather_imgIv3;
@@ -97,6 +101,6 @@ public class FirstWeatherFragment extends Fragment {
 			windTv2.setText("N/A");
 			windTv3.setText("N/A");
 		}
-	}
+	};
 
 }

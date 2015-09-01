@@ -52,6 +52,9 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 		OnClickListener {
 	
 	public static final String UPDATE_WIDGET_WEATHER_ACTION = "com.way.action.update_weather";
+	/**
+	 * Handler的返回码
+	 */
 	private static final int LOACTION_OK = 0;
 	private static final int UPDATE_EXISTS_CITY = 2;
 	public static final int GET_WEATHER_SCUESS = 3;
@@ -61,12 +64,17 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 	private CityDB mCityDB;
 	private SharePreferenceUtil mSpUtil;
 	private Application mApplication;
+	/**
+	 * 开机画面
+	 */
 	private View mSplashView;
 	private static final int SHOW_TIME_MIN = 3000;// 最小显示时间
 	private long mStartTime;// 开始时间
+	
 	private ImageView mCityManagerBtn, mLocationBtn, mShareBtn;
 	private RotateImageView mUpdateProgressBar;
 	private TextView mTitleTextView;
+//	最近几天的天气
 	private WeatherPagerAdapter mWeatherPagerAdapter;
 
 	private TextView cityTv, timeTv, weekTv, aqiDataTv, aqiQualityTv,
@@ -75,11 +83,15 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 	private View mAqiRootView;
 	private View mShareView;
 	private ImageView weatherImg, aqiImg;;
+	
 	private ViewPager mViewPager;
 	private List<Fragment> fragments;
+//	分享专用组件
 	private ShareUtil mShareUtil;
+	
 	/**
-	 * 建立Handler的实例,处理从其他的Application中传递的信息
+	 * 建立Handler的实例,
+	 * 处理从其他的Application中传递的信息
 	 */
 
 	private Handler mHandler = new Handler() {
@@ -96,8 +108,7 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 //					更新天气
 					MainActivity.this.updateWeather(curCity);
 				}
-				break;
-				
+				break;				
 				
 //			更新城市名称	
 			case UPDATE_EXISTS_CITY:
@@ -120,8 +131,9 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 				mUpdateProgressBar.stopAnim();
 //				计算花费的时间
 				long loadingTime = System.currentTimeMillis() - mStartTime;// 计算一下总共花费的时间
-				if (loadingTime < SHOW_TIME_MIN) {// 如果比最小显示时间还短，就延时进入MainActivity，否则直接进入
-//					延时 , splashGone是一个线程.
+				// 如果比最小显示时间还短，就延时进入MainActivity，否则直接进入
+//				延时 , splashGone是一个线程.
+				if (loadingTime < SHOW_TIME_MIN) {
 					mHandler.postDelayed(splashGone, SHOW_TIME_MIN
 							- loadingTime);
 				} else {
@@ -143,144 +155,6 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 		}
 	};
 	
-	
-	// 正式进入MainActivity
-	Runnable splashGone = new Runnable() {
-
-		@Override
-		public void run() {
-			
-			Animation anim = AnimationUtils.loadAnimation(MainActivity.this,
-					R.anim.push_right_out);
-//			监听
-			anim.setAnimationListener(new AnimationListener() {
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-				}
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					// TODO Auto-generated method stub
-					mSplashView.setVisibility(View.GONE);
-				}
-			});
-//			开启动画
-			mSplashView.startAnimation(anim);
-		}		
-	};
-/**
- * 更新组件
- */
-	private void updateWidgetWeather() {
-//		发送一条广播即可
-		sendBroadcast(new Intent(UPDATE_WIDGET_WEATHER_ACTION));
-	}
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		this.initData();
-		this.initView();
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-		NotificationManager notificationManager = mApplication
-				.getNotificationManager();
-		if (notificationManager != null)
-			notificationManager.cancelAll();
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		NetBroadcastReceiver.mListeners.remove(this);
-	}
-
-	/*
-	 * 进入SelectCityActivty
-	 */
-	private void startActivityForResult() {
-		Intent i = new Intent(this, SelectCtiyActivity.class);
-		this.startActivityForResult(i, 0);
-	}
-	/*
-	 * 初始化界面
-	 */
-	private void initView() {
-		mSplashView = findViewById(R.id.splash_view);
-		mCityManagerBtn = (ImageView) findViewById(R.id.title_city_manager);
-		mShareBtn = (ImageView) findViewById(R.id.title_share);
-		mLocationBtn = (ImageView) findViewById(R.id.title_location);
-		mCityManagerBtn.setOnClickListener(this);
-		mShareBtn.setOnClickListener(this);
-		mLocationBtn.setOnClickListener(this);
-		mUpdateProgressBar = (RotateImageView) findViewById(R.id.title_update_progress);
-		mUpdateProgressBar.setOnClickListener(this);
-		mTitleTextView = (TextView) findViewById(R.id.title_city_name);
-
-		cityTv = (TextView) findViewById(R.id.city);
-		timeTv = (TextView) findViewById(R.id.time);
-		timeTv.setText("未发布");
-		weekTv = (TextView) findViewById(R.id.week_today);
-
-		mAqiRootView = findViewById(R.id.aqi_root_view);
-		mAqiRootView.setVisibility(View.INVISIBLE);
-		mShareView = findViewById(R.id.weather_share_view);
-		aqiDataTv = (TextView) findViewById(R.id.pm_data);
-		aqiQualityTv = (TextView) findViewById(R.id.pm2_5_quality);
-		aqiImg = (ImageView) findViewById(R.id.pm2_5_img);
-		temperatureTv = (TextView) findViewById(R.id.temperature);
-		climateTv = (TextView) findViewById(R.id.climate);
-		windTv = (TextView) findViewById(R.id.wind);
-		weatherImg = (ImageView) findViewById(R.id.weather_img);
-//		碎片
-		fragments = new ArrayList<Fragment>();
-		fragments.add(new FirstWeatherFragment());
-		fragments.add(new SecondWeatherFragment());
-		
-		mViewPager = (ViewPager) findViewById(R.id.viewpager);
-		mWeatherPagerAdapter = new WeatherPagerAdapter(
-				getSupportFragmentManager(), fragments);
-		mViewPager.setAdapter(mWeatherPagerAdapter);
-		((CirclePageIndicator) findViewById(R.id.indicator))
-				.setViewPager(mViewPager);
-		if (TextUtils.isEmpty(mSpUtil.getCity())) {
-			if (NetUtil.getNetworkState(this) != NetUtil.NETWORN_NONE) {
-				mLocationClient.start();
-				mLocationClient.requestLocation();
-				mUpdateProgressBar.startAnim();
-			} else {
-				ToastUtil.showShort(this, R.string.net_err);
-			}
-		} else {
-			mHandler.sendEmptyMessage(UPDATE_EXISTS_CITY);
-		}
-	}
-	/**
-	 * 初始化数据
-	 */
-	private void initData() {
-		mStartTime = System.currentTimeMillis();// 记录开始时间
-		
-		NetBroadcastReceiver.mListeners.add(this);
-//		获得Application的单实例
-		mApplication = Application.getInstance();
-		mSpUtil = mApplication.getSharePreferenceUtil();
-		mLocationClient = mApplication.getLocationClient();
-		mLocationClient.registerLocationListener(mLocationListener);
-		mCityDB = mApplication.getCityDB();
-//		分享功能
-		mShareUtil = new ShareUtil(this, mHandler);
-	}
-
 	/**
 	 * 开启AsyncTask进行天气信息的抓取
 	 * @param city
@@ -295,17 +169,19 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 		mTitleTextView.setText(city.getName());
 //		更新时的动画
 		mUpdateProgressBar.startAnim();
-//		开启异步Task进行天气的抓取
+//		开启异步Task进行天气的抓取,天气信息读取到Application中
 		new GetWeatherTask(mHandler, city).execute();
-	}
+	};
 
 	/**
 	 * 更新天气界面
+	 * 保存天气信息
 	 */
 	private void updateWeatherInfo(WeatherInfo allWeather) {
 //		今天的星期
 		weekTv.setText("今天 " + TimeUtil.getWeek(0, TimeUtil.XING_QI));
 //		如果有fragments,则进行更新
+//		更新的是ViewPager上的显示图像
 		if (fragments.size() > 0) {
 			((FirstWeatherFragment) mWeatherPagerAdapter.getItem(0))
 					.updateWeather(allWeather);
@@ -351,6 +227,7 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 
 	/**
 	 * 更新AQI界面
+	 * 根据不同的值,设置不同等级
 	 */
 	private void updateAqiInfo(WeatherInfo allWeather) {
 		
@@ -394,6 +271,172 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 			ToastUtil.showShort(mApplication, "该城市暂无空气质量数据");
 		}
 	};
+	
+	/*
+	 * 开机动画
+	 */
+	Runnable splashGone = new Runnable() {
+
+		@Override
+		public void run() {
+			
+			Animation anim = AnimationUtils.loadAnimation(MainActivity.this,
+					R.anim.push_right_out);
+//			监听
+			anim.setAnimationListener(new AnimationListener() {
+
+				@Override
+				public void onAnimationStart(Animation animation) {
+				}
+
+				@Override
+				public void onAnimationRepeat(Animation animation) {
+				}
+
+				@Override
+				public void onAnimationEnd(Animation animation) {
+					// TODO Auto-generated method stub
+					mSplashView.setVisibility(View.GONE);
+				}
+			});
+//			开启动画
+			mSplashView.startAnimation(anim);
+		}		
+	};
+/**
+ * 更新组件
+ */
+	private void updateWidgetWeather() {
+//		发送一条广播即可
+		sendBroadcast(new Intent(UPDATE_WIDGET_WEATHER_ACTION));
+	}
+
+//	======================覆写方法=======================
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		this.initData();
+		this.initView();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		NotificationManager notificationManager = mApplication
+				.getNotificationManager();
+		if (notificationManager != null)
+			notificationManager.cancelAll();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		NetBroadcastReceiver.mListeners.remove(this);
+	}
+	/**
+	 * 连续按两次返回键就退出
+	 */
+	private long firstTime;
+
+	@Override
+	public void onBackPressed() {
+		if (System.currentTimeMillis() - firstTime < 3000) {
+			finish();
+		} else {
+			firstTime = System.currentTimeMillis();
+			ToastUtil.showShort(this, R.string.press_again_exit);
+		}
+	};
+
+	/*
+	 * 初始化界面
+	 */
+	private void initView() {
+		mSplashView = findViewById(R.id.splash_view);
+		mCityManagerBtn = (ImageView) findViewById(R.id.title_city_manager);
+		mShareBtn = (ImageView) findViewById(R.id.title_share);
+		mLocationBtn = (ImageView) findViewById(R.id.title_location);
+		mCityManagerBtn.setOnClickListener(this);
+		mShareBtn.setOnClickListener(this);
+		mLocationBtn.setOnClickListener(this);
+		mUpdateProgressBar = (RotateImageView) findViewById(R.id.title_update_progress);
+		mUpdateProgressBar.setOnClickListener(this);
+		mTitleTextView = (TextView) findViewById(R.id.title_city_name);
+
+		cityTv = (TextView) findViewById(R.id.city);
+		timeTv = (TextView) findViewById(R.id.time);
+		timeTv.setText("未发布");
+		weekTv = (TextView) findViewById(R.id.week_today);
+
+		mAqiRootView = findViewById(R.id.aqi_root_view);
+		mAqiRootView.setVisibility(View.INVISIBLE);
+		
+		mShareView = findViewById(R.id.weather_share_view);
+		aqiDataTv = (TextView) findViewById(R.id.pm_data);
+		aqiQualityTv = (TextView) findViewById(R.id.pm2_5_quality);
+		aqiImg = (ImageView) findViewById(R.id.pm2_5_img);
+		temperatureTv = (TextView) findViewById(R.id.temperature);
+		climateTv = (TextView) findViewById(R.id.climate);
+		windTv = (TextView) findViewById(R.id.wind);
+		weatherImg = (ImageView) findViewById(R.id.weather_img);
+		
+//		ViewPager显示的fragment
+		fragments = new ArrayList<Fragment>();
+		fragments.add(new FirstWeatherFragment());
+		fragments.add(new SecondWeatherFragment());
+		/**
+		 * ViewPager配置
+		 * 把Indicator和Adapter绑定起来
+		 */
+		mViewPager = (ViewPager) findViewById(R.id.viewpager);
+		mWeatherPagerAdapter = new WeatherPagerAdapter(
+				getSupportFragmentManager(), fragments);
+		mViewPager.setAdapter(mWeatherPagerAdapter);
+		((CirclePageIndicator) findViewById(R.id.indicator))
+				.setViewPager(mViewPager);
+		
+		/*
+		 * 如果SharePreference中没有City的信息,联网定位
+		 */
+		if (TextUtils.isEmpty(mSpUtil.getCity())) {
+			if (NetUtil.getNetworkState(this) != NetUtil.NETWORN_NONE) {
+				mLocationClient.start();
+				mLocationClient.requestLocation();
+				mUpdateProgressBar.startAnim();
+			} else {
+				ToastUtil.showShort(this, R.string.net_err);
+			}
+		} else {
+			mHandler.sendEmptyMessage(UPDATE_EXISTS_CITY);
+		}
+		
+	};
+	/**
+	 * 初始化数据
+	 */
+	private void initData() {
+		mStartTime = System.currentTimeMillis();// 记录开始时间
+		/*
+		 * 监视网络状态
+		 */
+		NetBroadcastReceiver.mListeners.add(this);
+//		获得Application的单实例
+		mApplication = Application.getInstance();
+		mSpUtil = mApplication.getSharePreferenceUtil();
+		/*
+		 * 定位Client
+		 */
+		mLocationClient = mApplication.getLocationClient();
+		mLocationClient.registerLocationListener(mLocationListener);
+//		数据库
+		mCityDB = mApplication.getCityDB();
+//		分享功能
+		mShareUtil = new ShareUtil(this, mHandler);
+	}
+
+	
 	/**
 	 * 获得天气的图片
 	 * @param climate
@@ -416,7 +459,7 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 	}
 
 	/*
-	 * 成员变量
+	 * Listener在initData ()中的进行注册
 	 */
 	BDLocationListener mLocationListener = new BDLocationListener() {
 
@@ -424,7 +467,10 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 		public void onReceivePoi(BDLocation arg0) {
 			// do nothing
 		}
-
+		/*
+		 * 定位到了城市以后的处理(non-Javadoc)
+		 * @see com.baidu.location.BDLocationListener#onReceiveLocation(com.baidu.location.BDLocation)
+		 */
 		@Override
 		public void onReceiveLocation(BDLocation location) {
 			mUpdateProgressBar.stopAnim();
@@ -440,7 +486,7 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 //			发送Handler, 更新UI
 			if (curCity != null) {
 				Message msg = mHandler.obtainMessage();
-				msg.what = LOACTION_OK;
+				msg.what = LOACTION_OK;//通过Message传递回去,然后开始更新天气
 				msg.obj = curCity;
 				mHandler.sendMessage(msg);// 更新天气
 			} else {// 如果定位到的城市数据库中没有，也弹出定位失败
@@ -449,6 +495,7 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 		}
 	};
 
+	
 	/**
 	 * 定位失败后处理
 	 */
@@ -466,17 +513,10 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 				});
 		dialog.show();
 	}
-	/**
-	 * 处理得到的City对象
-	 */
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == 0 && resultCode == RESULT_OK) {
-			City city = (City) data.getSerializableExtra("city");
-			mSpUtil.setCity(city.getName());
-			this.updateWeather(city);
-		}
-	}
 	
+	
+
+	//===============================EventHandler =====================================
 	/*
 	 * 网络状态改变以后的处理
 	 * @see com.way.app.NetBroadcastReceiver.EventHandler#onNetChange()
@@ -485,13 +525,14 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 	public void onNetChange() {
 		if (NetUtil.getNetworkState(this) == NetUtil.NETWORN_NONE) {
 			ToastUtil.showLong(this, R.string.net_err);
+//			网络状态改变的时候需要更新City的信息
 		} else {
 			if (!TextUtils.isEmpty(mSpUtil.getCity()))
 //				更新City
 				mHandler.sendEmptyMessage(UPDATE_EXISTS_CITY);
 		}
 	}
-	
+//===============================onClickListener =====================================
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
@@ -512,7 +553,7 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 //			分享
 		case R.id.title_share:
 			if (NetUtil.getNetworkState(this) != NetUtil.NETWORN_NONE) {
-				byte[] bm = getSharePicture();
+				byte[] bm = this.getSharePicture();
 				if (bm != null && mApplication.getAllWeather() != null)
 					mShareUtil.share(bm,
 							getShareContent(mApplication.getAllWeather()));
@@ -540,8 +581,28 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 		default:
 			break;
 		}
-	}
+	};
 
+	
+	/*
+	 * 进入SelectCityActivty
+	 */
+	private void startActivityForResult() {
+		Intent i = new Intent(this, SelectCityActivity.class);
+		this.startActivityForResult(i, 0);
+	};
+	/**
+	 * 处理得到的City对象
+	 */
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == 0 && resultCode == RESULT_OK) {
+			City city = (City) data.getSerializableExtra("city");
+			mSpUtil.setCity(city.getName());
+			this.updateWeather(city);
+		}
+	};
+	
+	
 	/**
 	 * 获得分享的图片
 	 * @return
@@ -577,19 +638,6 @@ public class MainActivity extends FragmentActivity implements EventHandler,
 						weatherInfo.getShidu(), weatherInfo.getWinNow() });
 	}
 
-	/**
-	 * 连续按两次返回键就退出
-	 */
-	private long firstTime;
 
-	@Override
-	public void onBackPressed() {
-		if (System.currentTimeMillis() - firstTime < 3000) {
-			finish();
-		} else {
-			firstTime = System.currentTimeMillis();
-			ToastUtil.showShort(this, R.string.press_again_exit);
-		}
-	}
 
-}
+};

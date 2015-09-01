@@ -110,6 +110,7 @@
                     android:layout_marginTop="10.0dip"
                     android:src="@drawable/biz_plugin_weather_selectcity_empty"
                     android:visibility="gone" />
+                
             </FrameLayout>
         </FrameLayout>
     </RelativeLayout>

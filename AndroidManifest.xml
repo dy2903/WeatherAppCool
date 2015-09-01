@@ -43,12 +43,12 @@
             android:theme="@style/Select_City_Theme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
         <activity
-            android:name="com.dy.activity.SelectCtiyActivity"
+            android:name="com.dy.activity.SelectCityActivity"
             android:alwaysRetainTaskState="true"
             android:configChanges="locale|keyboardHidden|orientation"
             android:screenOrientation="portrait"
